@@ -19,7 +19,8 @@ python get-pip.py
 rm get-pip.py
 
 python -m pip install subprocess
-python -m pip install netifaces 
+python -m pip install netifaces
+python -m pip install python-nmap
 
 echo "Setting up scapy..."
 git clone https://github.com/secdev/scapy/
