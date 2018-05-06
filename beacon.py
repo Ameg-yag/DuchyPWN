@@ -42,7 +42,7 @@ class Beacon:
             return 1
         print "Select one you wish to stop (0 = none): "
         for x in range(len(self.pid)):
-            print x+1, self.pid.items()[x][0], " is running under PID: ", self.pid.items()[x][1]
+            print str(x+1), str(self.pid.items()[x][0]), " is running under PID: ", str(self.pid.items()[x][1])
         while 1:
             choice = raw_input("> ")
             try:
@@ -57,13 +57,13 @@ class Beacon:
         if choice == 0:
             return 0
         else:
-            os.kill(self.pid.items()[choice-1][1])
+            os.kill(self.pid.items()[choice-1][1], 9)
         return 0
-    
+
     def stop_all(self):
         if len(self.pid) == 0:
             print "There are no beacons currently in use!"
             return 1
         for x in range(len(self.pid)):
-            os.kill(self.pid.items()[x][1])
+            os.kill(self.pid.items()[x][1], 9)
         return 0
