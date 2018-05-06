@@ -1,3 +1,6 @@
+import netifaces as ni
+from urllib2 import urlopen
+
 def get_pub_ip():
     return urlopen('https://ip.42.pl/raw').read()
 
