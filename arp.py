@@ -80,13 +80,3 @@ class Arp_poison:
         else:
             print "Not running :/ ..."
         return 0
-
-
-if __name__ == '__main__':
-    try:
-        attack = Arp_poison(gu.get_pub_ip(), gu.get_default_gateway())
-    except:
-        sys.exit("Not connected to any network..")
-    attack.poison_arp_table()
-    time.sleep(60)
-    attack.restore_arp_table()
