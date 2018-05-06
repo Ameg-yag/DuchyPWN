@@ -6,8 +6,14 @@ from multiprocessing import Process
 
 class Beacon:
     def __init__(self, iface = "wlan0"):
+        if os.system("iwconfig " + iface + "| grep Monitor >/dev/null 2>&1") != 0:
+            raise Exception("invalidIface")
         self.iface = iface
         self.pid = {}
+
+    def __del__(self):
+        if len(self.poison_pid) > 0:
+            self.stop_all()
 
     def __beacon_send(self, ssid, inter, enc):
         dot11 = Dot11(type=0, subtype=8, addr1='ff:ff:ff:ff:ff:ff', addr2=gu.rand_mac(), addr3=gu.rand_mac())
@@ -36,10 +42,14 @@ class Beacon:
             print str(self.pid.items()[x][0]) + " is running under PID: " + str(self.pid.items()[x][1])
         return 0
 
-    def stop(self):
+    def stop(self, ssid = None):
         if len(self.pid) == 0:
             print "There are no beacons currently in use!"
             return 1
+        if ssid != None:
+            os.kill(self.pid[ssid], 9)
+            print "Killed "+ ssid
+            self.pid.pop(self.pid[ssid])
         print "Select one you wish to stop (0 = none): "
         for x in range(len(self.pid)):
             print str(x+1), str(self.pid.items()[x][0]), " is running under PID: ", str(self.pid.items()[x][1])

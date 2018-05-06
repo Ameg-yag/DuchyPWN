@@ -18,3 +18,7 @@ def rand_mac():
         random.randint(0, 255),
         random.randint(0, 255)
         )
+
+def root_check():
+    if not os.geteuid() == 0:
+        sys.exit("Not root! Run this with sudo..")

