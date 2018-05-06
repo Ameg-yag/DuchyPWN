@@ -1,13 +1,13 @@
 from multiprocessing import Process
 import os
 import sys
-from scapy.all import sendp,Ether,ARP,get_if_hwaddr,getmacbyip,RadioTap
+from scapy.all import sendp,Ether,ARP,get_if_hwaddr,getmacbyip,RadioTap,config
 import time
 from random import randint
 from datetime import datetime
 import nmap
 
-import gen_utils is gu
+import gen_utils as gu
 
 conf.verb = 0 #shut the fuck up scapy
 

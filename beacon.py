@@ -22,7 +22,7 @@ class Beacon:
         sendp(frame, iface=self.iface, inter=inter, loop=1)
 
     def send(self, ssid, inter = 0.2, enc = False):
-        proc = Process(target=__beacon_send, args=(self, ssid, inter, enc,))
+        proc = Process(target=self.__beacon_send, args=(ssid, inter, enc,))
         proc.start()
         self.pid[ssid] = proc.pid
         return 0
@@ -33,7 +33,7 @@ class Beacon:
             return 1
         print "List of beacons: "
         for x in range(len(self.pid)):
-            print self.pid.items()[x][0] + " is running under PID: " + self.pid.items()[x][1]
+            print str(self.pid.items()[x][0]) + " is running under PID: " + str(self.pid.items()[x][1])
         return 0
 
     def stop(self):
@@ -58,6 +58,8 @@ class Beacon:
             return 0
         else:
             os.kill(self.pid.items()[choice-1][1], 9)
+            print "Killed "+str(self.pid.items()[choice-1][0])
+            self.pid.pop(self.pid.items()[choice-1][0])
         return 0
 
     def stop_all(self):

