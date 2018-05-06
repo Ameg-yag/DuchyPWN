@@ -2,9 +2,9 @@ import gen_utils as gu
 import arp
 import beacon
 import time
-arp_attack = arp.Arp_poison(gu.get_pub_ip(), gu.get_default_gateway())
 
-mybeacon = beacon.Beacon()
+arp_attack = arp.Arp_poison(gu.get_pub_ip(), gu.get_default_gateway())
+mybeacon = beacon.Beacon() # enter a monitor iface here
 
 mybeacon.send(ssid="TEST", enc = True)
 mybeacon.send(ssid="TEST1", enc = False)
