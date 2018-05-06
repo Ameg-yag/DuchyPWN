@@ -1,7 +1,7 @@
 from multiprocessing import Process
 import os
 import sys
-from scapy.all import Dot11,Dot11Beacon,Dot11Elt,sendp,hexdump,Ether,ARP,get_if_hwaddr,getmacbyip,RadioTap
+from scapy.all import sendp,Ether,ARP,get_if_hwaddr,getmacbyip,RadioTap
 import time
 from random import randint
 from datetime import datetime
