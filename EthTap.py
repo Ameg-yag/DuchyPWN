@@ -5,6 +5,11 @@ import time
 
 gu.root_check()
 
+def logo():
+
+def menu():
+
+
 def main():
     try:
         arp_attack = Arp_poison(gu.get_pub_ip(), gu.get_default_gateway())
