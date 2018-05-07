@@ -1,10 +1,18 @@
+# written by Jan "Duchy" Neduchal
+# 2018
+# Licenced under the MIT licence
+# Do what the f**k ever you want with the code, I don't really care. I <3 opensource.
+# However note, that I, Jan Neduchal, take no responsibility for any malicious of your actions with this code
+#
+#
+# You can contact me at honza.neduchal@gmail.com
 import time
 import glob
-import readline # optional, will allow Up/Down/History in the console
+import readline
 import code
 modules = glob.glob("modules/*.py")
 modules_loaded = 0
-for f in modules:
+for f in modules:       # loads all from modules/
     if not f.endswith('__init__.py'):
         exec "from "+f[:-3].replace("/",".")+" import *"
         modules_loaded += 1
