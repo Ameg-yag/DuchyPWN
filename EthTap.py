@@ -2,12 +2,28 @@ import gen_utils as gu
 from arp import Arp_poison
 from beacon import Beacon
 import time
-
+from os.path import dirname, basename, isfile
+import glob
 gu.root_check()
 
+modules = glob("modules/*.py")  # loads all modules
+__all__ = [ basename(f)[:-3] for f in modules if isfile(f) and not f.endswith('__init__.py')]
+
 def logo():
+    print """______            _          ______ _    _ _   _
+|  _  \          | |         | ___ \ |  | | \ | |
+| | | |_   _  ___| |__  _   _| |_/ / |  | |  \| |
+| | | | | | |/ __| '_ \| | | |  __/| |/\| | . ` |
+| |/ /| |_| | (__| | | | |_| | |   \  /\  / |\  |
+|___/  \__,_|\___|_| |_|\__, \_|    \/  \/\_| \_/
+                         __/ |
+                        |___/
+
+            by Jan 'Duchy' Neduchal 2018"""
 
 def menu():
+    logo()
+    print ""
 
 
 def main():
