@@ -1,6 +1,8 @@
 import netifaces as ni
 from urllib2 import urlopen
 import random
+import os
+import sys
 
 def get_pub_ip():
     return urlopen('https://ip.42.pl/raw').read()
@@ -34,3 +36,10 @@ def switch_to_monitor(iface):
             return iface
     else:
         raise Exception("invalidIface")
+
+def get_yn(prompt):
+    while True:
+        try:
+           return {"y":True,"n":False}[raw_input(prompt).lower()]
+        except KeyError:
+           print "\nInvalid input please enter y/n!"

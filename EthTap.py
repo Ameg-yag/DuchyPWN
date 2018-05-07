@@ -1,15 +1,23 @@
-import gen_utils as gu
-from arp import Arp_poison
-from beacon import Beacon
 import time
-from os.path import dirname, basename, isfile
 import glob
-gu.root_check()
+import readline # optional, will allow Up/Down/History in the console
+import code
+modules = glob.glob("modules/*.py")
+modules_loaded = 0
+for f in modules:
+    if not f.endswith('__init__.py'):
+        exec "from "+f[:-3].replace("/",".")+" import *"
+        modules_loaded += 1
 
-modules = glob("modules/*.py")  # loads all modules
-__all__ = [ basename(f)[:-3] for f in modules if isfile(f) and not f.endswith('__init__.py')]
+
+root_check()
+
+def blank(n):
+    for i in range (n):
+        print ""
 
 def logo():
+    os.system("clear")
     print """______            _          ______ _    _ _   _
 |  _  \          | |         | ___ \ |  | | \ | |
 | | | |_   _  ___| |__  _   _| |_/ / |  | |  \| |
@@ -23,36 +31,47 @@ def logo():
 
 def menu():
     logo()
-    print ""
+    blank(1)
+    print "Loaded " + str(modules_loaded) + " module(s)."
+    blank(2)
+    print "Type help for....you guessed it, HELP!"
+    blank(9)
 
+def print_help():
+    print "Much of this shit depends on modules (see wiki for docs)"
+    print"""some basic commands:
+    help
+    clear
+    get_pub_ip()
+    get_default_gateway()
+    switch_to_monitor(iface = "The goddamn wireless interface")
+    exit"""
 
 def main():
+    menu()
+    while 1:
+        choice = raw_input("> ")
+        if choice == "q" or choice == "exit" or choice == "quit":
+            sys.exit(0)
+        if choice == "help" or choice == "--help" or choice == "-h":
+            print_help()
+            continue
+        if choice == "clear" or choice == "cls":
+            menu()
+            continue
+        try:
+            exec choice
+        except:
+            print "Invalid command! Type help for....you guessed it, HELP!"
+            continue
+
+while 1:
     try:
-        arp_attack = Arp_poison(gu.get_pub_ip(), gu.get_default_gateway())
-    except invalidIface:
-        print "The interface is invalid! (switch it to monitor mode)"
-        sys.exit(1)
-
-    try:
-        mybeacon = Beacon() # enter a monitor iface here
-    except invalidIface:
-        print "The interface is invalid! (switch it to monitor mode)"
-        sys.exit(1)
-
-    mybeacon.send(ssid="TEST", enc = True)
-    mybeacon.send(ssid="TEST1", enc = False)
-    mybeacon.send(ssid="TEST2", enc = True)
-    mybeacon.send(ssid="TEST3")
-    mybeacon.list()
-    mybeacon.stop()
-    mybeacon.list()
-    time.sleep(5)
-    mybeacon.stop_all()
-    arp_attack.poison_arp_table()
-    time.sleep(10)
-    arp_attack.restore_arp_table()
-
-try:
-    main()
-except KeyboadInterrupt:
-    print("Exitting")
+        main()
+    except KeyboardInterrupt:
+        blank(1)
+        if get_yn("Are you sure, you want to quit? (y/n):  "):
+            print "Exitting"
+            sys.exit(0)
+        else:
+            continue
