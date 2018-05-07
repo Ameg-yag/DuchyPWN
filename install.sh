@@ -1,8 +1,6 @@
 # written by Jan "Duchy" Neduchal
 # 2018
 # Licenced under the MIT licence
-# Do what the f**k ever you want with the code, I don't really care. I <3 opensource.
-# However note, that I, Jan Neduchal, take no responsibility for any malicious of your actions with this code
 if (( $EUID != 0 )); then
     fail "Script must be run as root"
     exit
@@ -23,7 +21,6 @@ wget https://bootstrap.pypa.io/get-pip.py
 python get-pip.py
 rm get-pip.py
 
-python -m pip install subprocess
 python -m pip install netifaces
 python -m pip install python-nmap
 
