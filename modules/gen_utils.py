@@ -42,6 +42,19 @@ def switch_to_monitor(iface):
     else:
         raise Exception("invalidIface")
 
+def switch_to_managed(iface):
+    if os.system("iwconfig %s| grep 'No wireless extensions' >/dev/null 2>&1" % iface) != 0:
+        if os.system("iwconfig %s| grep 'Monitor' >/dev/null 2>&1" % iface) != 0:
+            return iface
+        else:
+            os.system('ip link set %s down' % iface)
+            os.system('iwconfig %s mode managed' % iface)
+            os.system('ip link set %s up' % iface)
+            return iface
+    else:
+        raise Exception("invalidIface")
+
+
 def get_yn(prompt):
     while True:
         try:
