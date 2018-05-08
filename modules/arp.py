@@ -75,6 +75,8 @@ class Arp_poison:
         print "Scanning for alive hosts.."
         target = self.__get_targets(str(self.gateway+"/24"))
         print "Done!"
+        print "Starting to poison.."
+        print ""
         if self.log:
             with open("/var/log/fun&games.log", "a") as f:
                 f.write("Poisoning the ARP cache " + str(datetime.now()) + "\n")
