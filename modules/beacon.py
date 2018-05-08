@@ -17,7 +17,7 @@ class Beacon:
         self.pid = {}
 
     def __del__(self):
-        if len(self.poison_pid) > 0:
+        if len(self.pid) > 0:
             self.stop_all()
 
     def __beacon_send(self, ssid, inter, enc):
