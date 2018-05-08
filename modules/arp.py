@@ -32,7 +32,7 @@ class Arp_poison:
         self.wireless = wireless  # currently this flag needs to be set manually (during obj init or obj.wireless = True)
         self.debug = DEBUG # un-shutthefuckups scapy and prints internal values
         self.log = log
-        if self.DEBUG:
+        if self.debug:
             print self.iface
             print self.mac
             print self.gateway

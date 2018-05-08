@@ -21,7 +21,9 @@ class Beacon:
             self.stop_all()
 
     def __beacon_send(self, ssid, inter, enc):
-        dot11 = Dot11(type=0, subtype=8, addr1='ff:ff:ff:ff:ff:ff', addr2=gu.rand_mac(), addr3=gu.rand_mac())
+        addr2 = gu.rand_mac()
+        addr3 = gu.rand_mac()
+        dot11 = Dot11(type=0, subtype=8, addr1='ff:ff:ff:ff:ff:ff', addr2=addr2, addr3=addr3
         beacon = Dot11Beacon(cap='ESS')
         beacon_enc = Dot11Beacon(cap='ESS+privacy')
         essid = Dot11Elt(ID='SSID',info=ssid, len=len(ssid))
