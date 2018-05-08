@@ -10,6 +10,7 @@ import time
 import glob
 import code
 import sys
+import readline
 modules = glob.glob("modules/*.py")
 modules_loaded = 0
 modules_loaded_list = []
@@ -68,7 +69,7 @@ def main():
     menu()
     while 1:
         choice = raw_input("> ")
-        if choice.lower() == "q" or choice.lower() == "exit" or choice ==.lower() "quit":
+        if choice.lower() == "q" or choice.lower() == "exit" or choice.lower() == "quit":
             sys.exit(0)
         if choice.lower() == "help" or choice.lower() == "--help" or choice.lower() == "-h":
             print_help()
