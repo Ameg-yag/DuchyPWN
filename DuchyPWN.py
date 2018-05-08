@@ -8,15 +8,21 @@
 # You can contact me at honza.neduchal@gmail.com
 import time
 import glob
-import readline
 import code
+import sys
 modules = glob.glob("modules/*.py")
 modules_loaded = 0
+modules_loaded_list = []
 for f in modules:       # loads all from modules/
     if not f.endswith('__init__.py'):
-        exec "from "+f[:-3].replace("/",".")+" import *"
-        modules_loaded += 1
-
+        try:
+            exec "from "+f[:-3].replace("/",".")+" import *"
+            modules_loaded += 1
+            modules_loaded_list.append(f[:-3].replace("modules/", ""))
+        except:
+            print "Error in loading the module: " + f[:-3].replace("modules/", "")
+            print "Check module dependencies!"
+            continue
 
 root_check()
 
@@ -52,19 +58,25 @@ def print_help():
     clear
     get_pub_ip()
     get_default_gateway()
-    switch_to_monitor(iface = "The goddamn wireless interface")
-    exit"""
+    switch_to_monitor(iface = "The wireless interface")
+    switch_to_managed(iface = "The wireless interface")
+    list        (lists loaded modules)
+    exit
+    """
 
 def main():
     menu()
     while 1:
         choice = raw_input("> ")
-        if choice == "q" or choice == "exit" or choice == "quit":
+        if choice.lower() == "q" or choice.lower() == "exit" or choice ==.lower() "quit":
             sys.exit(0)
-        if choice == "help" or choice == "--help" or choice == "-h":
+        if choice.lower() == "help" or choice.lower() == "--help" or choice.lower() == "-h":
             print_help()
             continue
-        if choice == "clear" or choice == "cls":
+        if choice.lower() == "list" or choice.lower() == "lst":
+            for x in range(len(modules_loaded_list)):
+                print modules_loaded_list[x]
+        if choice.lower() == "clear" or choice.lower() == "cls":
             menu()
             continue
         try:
