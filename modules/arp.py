@@ -15,7 +15,7 @@ import gen_utils as gu
 conf.verb = 0 #shut the fuck up scapy
 
 
-class Arp_poison:
+class Arp:
     def __init__(self, iface = "eth0", wireless = False, DEBUG = False, log = False):
         self.iface = iface
         self.mac = get_if_hwaddr(self.iface)
