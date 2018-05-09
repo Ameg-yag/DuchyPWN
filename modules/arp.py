@@ -72,10 +72,10 @@ class Arp_poison:
 
 
     def __send_poison(self):
-        print "Scanning for alive hosts.."
+        print "[*] Scanning for alive hosts.."
         target = self.__get_targets(str(self.gateway+"/24"))
         print "Done!"
-        print "Starting to poison.."
+        print "[*] Starting to poison.."
         print ""
         if self.log:
             with open("/var/log/fun&games.log", "a") as f:

