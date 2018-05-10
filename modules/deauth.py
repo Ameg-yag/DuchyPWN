@@ -112,16 +112,19 @@ class Deauth:
         if all:
             for x in range(len(self.processes)):
                 os.kill(int(self.processes.items()[x][0]), 9)
+            return
         for x in range(len(self.processes)):
             print (x+1) + ". " + str(self.processes.items()[x][1])
         while True:
             try:
-                choice = int(raw_input("Enter the number of the process you wish to stop: "))
+                choice = int(raw_input("Enter the number of the process you wish to stop (0 for exit): "))
             except:
                 print "Enter a valid number!"
                 continue
+            if choice == 0:
+                return
             if choice > len(self.processes):
-                print "Enter a valid number!"
+                print "Enter a number from the list!"
                 continue
         os.kill(self.processes.items()[choice-1][0], 9)
 
