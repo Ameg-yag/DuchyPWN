@@ -23,9 +23,9 @@ class Deauth:
                 raise Exception("invalidIface")
 
 # Copied and modified from https://stackoverflow.com/questions/21613091/how-to-use-scapy-to-determine-wireless-encryption-type
-    def __insert_ap(pkt):
+    def __insert_ap(self, pkt):
         bssid = pkt[Dot11].addr3
-        if bssid in aps:
+        if bssid in self.networks:
             return
         p = pkt[Dot11Elt]
         cap = pkt.sprintf("{Dot11Beacon:%Dot11Beacon.cap%}"
@@ -58,7 +58,7 @@ class Deauth:
 
     def __scan_clients(self,pkt):
         if pkt.haslayer(Dot11):
-            if pkt.addr1 and pkt.addr2 and akt.addr2 is not in self.clients:
+            if pkt.addr1 and pkt.addr2 and akt.addr2 not in self.clients:
                 print "Client: " + str(pkt.addr2) + " AP: " + str(pkt.addr1)
                 self.clients.append(pkt.addr2)
 
@@ -71,6 +71,7 @@ class Deauth:
         channel_hop.join()
 
     def show_networks(self):
+        self.networks.clear()
         channel_hop = Process(target = self.__channel_hopper)
         channel_hop.start()
         sniff(iface=self.iface, prn=self.__insert_ap, store=False, lfilter=lambda p: (Dot11Beacon in p or Dot11ProbeResp in p), timeout = 15)
@@ -114,16 +115,18 @@ class Deauth:
                 os.kill(int(self.processes.items()[x][0]), 9)
             return
         for x in range(len(self.processes)):
-            print (x+1) + ". " + str(self.processes.items()[x][1])
+            print str((x+1)) + ". " + str(self.processes.items()[x][1])
         while True:
             try:
                 choice = int(raw_input("Enter the number of the process you wish to stop (0 for exit): "))
+            except KeyboardInterrupt:
+                return
             except:
                 print "Enter a valid number!"
                 continue
             if choice == 0:
                 return
-            if choice > len(self.processes):
+            if choice > len(self.processes)+1 or choice < 0:
                 print "Enter a number from the list!"
                 continue
         os.kill(self.processes.items()[choice-1][0], 9)
