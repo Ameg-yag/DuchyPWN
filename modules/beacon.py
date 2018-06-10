@@ -7,6 +7,7 @@ from scapy.all import Dot11,Dot11Beacon,Dot11Elt,RadioTap,sendp
 import sys
 import os
 import gen_utils as gu
+
 from multiprocessing import Process
 
 class Beacon:

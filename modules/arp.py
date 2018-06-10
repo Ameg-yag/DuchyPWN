@@ -6,11 +6,19 @@
 from multiprocessing import Process
 import os
 import sys
-from scapy.all import sendp,Ether,ARP,get_if_hwaddr,getmacbyip,RadioTap,conf
+try:
+    from scapy.all import sendp,Ether,ARP,get_if_hwaddr,getmacbyip,RadioTap,conf
+except:
+    print "install scapy please!"
+    sys.exit(-1)
 import time
 from random import randint
 from datetime import datetime
-import nmap
+try:
+    import nmap
+except:
+    print "install nmap please!"
+    sys.exit(-1)
 import gen_utils as gu
 conf.verb = 0 #shut the fuck up scapy
 
@@ -22,7 +30,7 @@ class Arp:
         try:
             self.pub_ip = gu.get_pub_ip()
         except:
-            print "Net connected to the internet.." # I still don't see it as much of a problem
+            print "Not connected to the internet.." # I still don't see it as much of a problem
         try:
             self.gateway = gu.get_default_gateway()
         except:
@@ -64,7 +72,7 @@ class Arp:
                 try:
                     finlst.append([str(b['addresses']['ipv4']), str(b['addresses']['mac'])])
                 except:
-                    pass
+                    continue
         if self.log:
             with open("/var/log/fun&games.log", "a") as f:
                 f.write("Finished scanning " + str(datetime.now()) + "\n")

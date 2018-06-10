@@ -3,14 +3,29 @@
 # Licenced under the MIT licence
 # Do whatever you want with the code, I don't really care. I <3 opensource.
 # However note, that I, Jan Neduchal, take no responsibility for any malicious of your actions with this code
+
 import netifaces as ni
-from urllib2 import urlopen
+from netaddr import IPNetwork
+import requests
 import random
 import os
 import sys
+import re
+
+def get_lan_range(interface):
+    iface_dict = ni.ifaddresses(interface)
+    netmask = iface_dict[ni.AF_INET][0]["netmask"]
+    addr = iface_dict[ni.AF_INET][0]["addr"]
+    addr_lst = addr.split(".")
+    if netmask == "255.255.255.0":
+        return ("{0}.{1}.{2}.0/24".format(addr_lst[0], addr_lst[1], addr_lst[2]))
+    if netmask == "255.255.0.0":
+        return ("{0}.{1}.0.0/16".format(addr_lst[0], addr_lst[1]))
+    if netmask == "255.0.0.0":
+        return ("{0}.0.0.0/8".format(addr_lst[0]))
 
 def get_pub_ip():
-    return urlopen('https://ip.42.pl/raw').read()
+    return (requests.get('https://ip.42.pl/raw').text)
 
 
 def get_default_gateway():
@@ -61,3 +76,22 @@ def get_yn(prompt):
            return {"y":True,"n":False}[raw_input(prompt).lower()]
         except KeyError:
            print "\nInvalid input please enter y/n!"
+
+def list_ifaces():
+    ifaces = ni.interfaces()
+    if len(ifaces) < 1:
+        print "No interfaces found"
+        return
+    for i in range(len(ifaces)):
+        if os.system("iwconfig " + ifaces[i] + "| grep Monitor >/dev/null 2>&1") != 0:
+            if os.system("iwconfig " + ifaces[i] + "| grep wireless extensions >/dev/null 2>&1") == 0:
+                print str(i+1) + ". " + ifaces[i] + " no wireless extension"
+            else:
+                print str(i+1) + ". " + ifaces[i] + " Managed mode"
+        else:
+            print str(i+1) + ". " + ifaces[i] + " Monitor mode"
+
+
+def blank(n):
+    for i in range (n):
+        print ""

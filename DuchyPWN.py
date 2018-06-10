@@ -7,11 +7,11 @@
 #
 # You can contact me at honza.neduchal@gmail.com
 import time
-import glob
+import glob  # for UNIX path resolution (folder/*)
 import code
 import sys
 import readline
-modules = glob.glob("modules/*.py")
+modules = glob.glob("modules/*.py") # load all modules to a var
 modules_loaded = 0
 modules_loaded_list = []
 for f in modules:       # loads all from modules/
@@ -20,16 +20,14 @@ for f in modules:       # loads all from modules/
             exec "from "+f[:-3].replace("/",".")+" import *"
             modules_loaded += 1
             modules_loaded_list.append(f[:-3].replace("modules/", ""))
-        except:
+        except Exception as err:
             print "Error in loading the module: " + f[:-3].replace("modules/", "")
+            print "Error: " + str(err)
             print "Check module dependencies!"
             continue
 
-root_check()
+root_check() # you need to run as root
 
-def blank(n):
-    for i in range (n):
-        print ""
 
 def logo():
     os.system("clear")
@@ -80,9 +78,24 @@ def main():
         if choice.lower() == "clear" or choice.lower() == "cls":
             menu()
             continue
+        if choice.lower() == "info":
+            try:
+                print "Public IP: " + get_pub_ip()
+            except:
+                print "Not connected to the internet."
+            try:
+                print "Deafult Gateway: " + get_default_gateway()
+            except:
+                print "No default gateway found."
+            list_ifaces()
+            for x in range(len(modules_loaded_list)):
+                print modules_loaded_list[x]
+            continue
+
         try:
-            exec choice
-        except:
+            exec choice    # execute inside the python interpreter (something like an interactive shell)
+        except Exception as err:
+            print str(err)
             print "Invalid command! Type help for....you guessed it, HELP!"
             continue
 
