@@ -10,6 +10,7 @@ import sys
 import gen_utils as gu
 import requests
 import re
+import socket
 
 class Nmap:
     def __init__(self, iface = "eth0", DEBUG = False, log = False, logfile = "nmap.log"):
@@ -84,24 +85,22 @@ class Nmap:
                 if domain != "":
                     print "Domain: " + domain
                 print "IP address: " + ip
-                print "MAC address: " + "MAC address: " + str(obj[str(ip)]["addresses"]["mac"]) + "  (" + str(obj[str(ip)]["vendor"][obj[str(ip)]["addresses"]["mac"]]) + ")"
-                print "OS: " + str(obj[str(ip)]["osmatch"][0]["osclass"][0]["osfamily"]) + " Version: " + obj[str(ip)]["osmatch"][0]["osclass"][0]["osgen"]
+                print "OS: " + str(obj[str(ip)]["osmatch"][0]["osclass"][0]["osfamily"]) + " " + obj[str(ip)]["osmatch"][0]["osclass"][0]["osgen"]
                 print "\tOpen tcp ports: " + str(obj[ip].all_tcp())[1:][:-1]
                 print "\tOpen udp ports: " + str(obj[ip].all_udp())[1:][:-1]
                 print "\tOpen sctp ports: " + str(obj[ip].all_sctp())[1:][:-1]
                 print "\tOpen ip ports: " + str(obj[ip].all_ip())[1:][:-1]
-                print ""
-                if "80" in obj[ip].all_tcp():
-                    url = str(ip)+"/wp-admin"
+                if 80 in obj[ip].all_tcp():
+                    url = "http://"+str(domain)+"/wp-admin"
                     req = requests.get(url)
                     if req.status_code == 200:
-                        wordpress = re.findall('ver=.\..\..|ver=.\..', req.text)[4:]
+                        wordpress = re.findall('ver=.\..\..|ver=.\..', req.text)[0][4:]
                         print ""
-                        print "Wordpress " + wordpress
+                        print "Wordpress " + str(wordpress)
 
-                    url = str(ip)+"/robots.txt"
+                    url = "http://"+str(domain)+"/robots.txt"
                     req = requests.get(url)
                     if req.status_code == 200:
                         content = req.text.replace("\n", " ")
                         print ""
-                        print "robots.txt: " + content
+                        print "robots.txt: " + str(content)
