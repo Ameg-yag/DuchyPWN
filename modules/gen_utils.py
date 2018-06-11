@@ -5,7 +5,6 @@
 # However note, that I, Jan Neduchal, take no responsibility for any malicious of your actions with this code
 
 import netifaces as ni
-from netaddr import IPNetwork
 import requests
 import random
 import os

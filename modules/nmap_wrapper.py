@@ -8,9 +8,9 @@ import nmap
 import os
 import sys
 import gen_utils as gu
-import requests
+import requests # get()
 import re
-import socket
+import socket # for dns resolution
 
 class Nmap:
     def __init__(self, iface = "eth0", DEBUG = False, log = False, logfile = "nmap.log"):
@@ -37,13 +37,18 @@ class Nmap:
 
 
     def scan_lan(self, ports = False):
+        if self.log:
+            with open(self.logfile, "a") as f:
+                f.write("NMAP - scan_lan(ports=" + str(ports) + ")\n")
         if ports:
             args = "-F"
         else:
             args = "-sn"
         obj = nmap.PortScanner()
-        print "Scanning, it may take a while.."
-        obj.scan(hosts=get_lan_range(self.iface), arguments=args)
+        range = gu.get_lan_range(self.iface)
+        print "Scanning in range: " + range
+        print "It may take a while.."
+        obj.scan(hosts=range, arguments=args)
         hosts = obj.all_hosts()
         print "\nHosts up: " + str(len(hosts))
         print ""
@@ -65,13 +70,24 @@ class Nmap:
                 else:
                     print "\tOpen ports: " + str(ports_open)[1:][:-1]
             print ""
+            if self.log:
+                with open(self.logfile, "a") as f:
+                    f.write("NMAP - scan_lan() results:\n")
+                    f.write(obj.csv())
 
 
-    def scan(self, ip, args = "-F -O"):
+    def scan(self, ip, args = "-F -O", save = False, filename = ""):
+        if self.log:
+            with open(self.logfile, "a") as f:
+                f.write("NMAP - scan(args=" + str(args) + ")\n")
         ipregex = re.compile("^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}$")
+        domain = ""
         if not ipregex.match(ip):
             domain = re.sub('^(http|https)://', "",ip).replace("/", "")
+            filename = domain + ".log"
             ip = socket.gethostbyname(domain)
+        else:
+            filename = str(ip)+".log"
         obj = nmap.PortScanner()
         obj.scan(ip, arguments = args)
         if obj[ip].state() != "up":
@@ -90,17 +106,38 @@ class Nmap:
                 print "\tOpen udp ports: " + str(obj[ip].all_udp())[1:][:-1]
                 print "\tOpen sctp ports: " + str(obj[ip].all_sctp())[1:][:-1]
                 print "\tOpen ip ports: " + str(obj[ip].all_ip())[1:][:-1]
+                if self.log:
+                    with open(self.logfile, "a") as f:
+                        f.write("NMAP - scan results:\n")
+                        f.write(obj.csv())
                 if 80 in obj[ip].all_tcp():
-                    url = "http://"+str(domain)+"/wp-admin"
-                    req = requests.get(url)
-                    if req.status_code == 200:
-                        wordpress = re.findall('ver=.\..\..|ver=.\..', req.text)[0][4:]
-                        print ""
-                        print "Wordpress " + str(wordpress)
-
-                    url = "http://"+str(domain)+"/robots.txt"
-                    req = requests.get(url)
-                    if req.status_code == 200:
-                        content = req.text.replace("\n", " ")
-                        print ""
-                        print "robots.txt: " + str(content)
+                    if domain != "":
+                        url = "http://" + str(domain) + "/wp-admin"
+                    else:
+                        url = "http://" + str(ip) + "/wp-admin"
+                    try:
+                        req = requests.get(url, timeout=5)
+                        if req.status_code == 200:
+                            wordpress = re.findall('ver=.\..\..|ver=.\..', req.text)[0][4:]
+                            print ""
+                            print "Wordpress " + str(wordpress)
+                            if self.log:
+                                with open(self.logfile, "a") as f:
+                                    f.write("Wordpress " + str(wordpress) + "\n")
+                    except:
+                        print "WordPress check timed out"
+                    if domain != "":
+                        url = "http://" + str(domain) + "/robots.txt"
+                    else:
+                        url = "http://" + str(ip) + "/robots.txt"
+                    try:
+                        req = requests.get(url, timeout=5)
+                        if req.status_code == 200:
+                            content = req.text.replace("\n", " ")
+                            print ""
+                            print "robots.txt: " + str(content)
+                            if self.log:
+                                with open(self.logfile, "a") as f:
+                                    f.write("robots.txt: " + content)
+                    except:
+                        print "robots.txt check timed out"

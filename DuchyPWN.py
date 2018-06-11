@@ -28,6 +28,81 @@ for f in modules:       # loads all from modules/
 
 root_check() # you need to run as root
 
+def scan_init():
+    try:
+        iface = sys.argv[2]
+        ip = sys.argv[3]
+    except:
+        print "Missing an argument!"
+        print "Usage: sudo python DuchyPWN.py scan 'iface' 'ip'"
+    a = Nmap(iface)
+    a.scan(ip)
+def beacon_init():
+    try:
+        iface = sys.argv[2]
+        ssid = sys.argv[3]
+    except:
+        print "Missing an argument!"
+        print "Usage: sudo python DuchyPWN.py beacon 'iface' 'ssid' 'enc' (optional, default False)"
+    try:
+        encrypt = sys.argv[4]
+    except:
+        encrypt = False
+    a = Beacon(iface)
+    a.send(ssid, enc = encrypt)
+def deauth_init():
+    try:
+        iface = sys.argv[2]
+        mac = sys.argv[3]
+    except:
+        print "Missing an argument!"
+        print "Usage: sudo python DuchyPWN.py deauth 'iface' 'mac' (of an AP)"
+    a = Deauth(iface)
+    a.deauth(mac)
+def arp_init():
+    try:
+        iface = sys.argv[2]
+    except:
+        print "Missing an argument!"
+        print "Usage: sudo python DuchyPWN.py arp 'iface' 'wireless' (optional, default False)"
+    try:
+        wireless = sys.argv[3]
+    except:
+        wireless = False
+    a = Arp(iface, wireless)
+    a.poison_arp_table()
+def scan_lan_init():
+    try:
+        iface = sys.argv[2]
+    except:
+        print "Missing an argument!"
+        print "Usage: sudo python DuchyPWN.py scan_lan 'iface'"
+    a = Nmap(iface)
+    a.scan_lan()
+def deauth_all_init():
+    try:
+        count = sys.argv[2]
+    except:
+        count = -1
+    try:
+        client = sys.argv[3]
+    except:
+        client = "FF:FF:FF:FF:FF:FF"
+
+if len(sys.argv) > 1:
+    options = {
+    "deauth" : deauth_init(),
+    "arp" : arp_init(),
+    "deauth_all" : deauth_all_init(),
+    "scan" : scan_init(),
+    "scan_lan" : scan_lan_init(),
+    "beacon" : beacon_init()
+    }
+    options[sys.argv[1]]()
+
+
+
+
 
 def logo():
     os.system("clear")
@@ -57,6 +132,7 @@ def print_help():
     clear
     get_pub_ip()
     get_default_gateway()
+    get_lan_range(iface)
     switch_to_monitor(iface = "The wireless interface")
     switch_to_managed(iface = "The wireless interface")
     list        (lists loaded modules)
@@ -67,6 +143,9 @@ def main():
     menu()
     while 1:
         choice = raw_input("> ")
+        choice = choice.replace("import ", "")
+        choice = choice.replace("from ", "")
+        choice = choice.replace("exec ", "")#for safety reasons...
         if choice.lower() == "q" or choice.lower() == "exit" or choice.lower() == "quit":
             sys.exit(0)
         if choice.lower() == "help" or choice.lower() == "--help" or choice.lower() == "-h":
@@ -96,7 +175,6 @@ def main():
             exec choice    # execute inside the python interpreter (something like an interactive shell)
         except Exception as err:
             print str(err)
-            print "Invalid command! Type help for....you guessed it, HELP!"
             continue
 
 while 1:
